@@ -144,7 +144,7 @@ if(incoming.available()>0)
 	public void initialize() throws NXTCommException, IOException {
 		connection = NXTCommFactory.createNXTComm(NXTCommFactory.BLUETOOTH);
 		NXTInfo[] nxtInfo = connection.search(null, NXTCommFactory.BLUETOOTH);
-		connection.open(nxtInfo[0]);
+		connection.open(nxtInfo[0], NXTCommFactory.BLUETOOTH);
 		// open up datainput and output streams;
 		
 
