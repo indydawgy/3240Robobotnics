@@ -13,10 +13,14 @@ import javax.swing.JLabel;
 import javax.swing.JCheckBox;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.JTextArea;
+
+import lejos.pc.comm.NXTCommException;
 
 
 public class BaseGUI extends JFrame {
@@ -89,14 +93,14 @@ public class BaseGUI extends JFrame {
 		}
 		commandPool.put(counter, mycommand);
 		counter++;
-		//ComManager.sendCommand(counter + " " + mycommand);
+		ComManager.sendCommand(counter + " " + mycommand);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NXTCommException, IOException {
 		
 		//(ComManager = new CommunicationManager()).start();
 		speed = RobotState.GetInstance().getSpeed();
-		
+		ComManager = new CommunicationManager();
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -107,9 +111,11 @@ public class BaseGUI extends JFrame {
 				}
 			}
 		});
+		ComManager.initialize();
 		long lastUpdate = System.nanoTime() / 1000000000;
 		while (true)
 		{
+			ComManager.update();
 			//System.out.println(System.nanoTime());
 			if (lastUpdate < System.nanoTime() / 1000000000)
 			{
@@ -150,20 +156,20 @@ public class BaseGUI extends JFrame {
 					issueCommand(command);
 				}
 				
-	//			if (ComManager.completed.containsKey(locationUpdate))
-	//			{
-	//				String returnMessage = ComManager.completed.get(locationUpdate);
-	//				String[] splitReturnMessage = returnMessage.split(" ");
-	//				if (splitReturnMessage[1] == SUCCESS_RETURN)
-	//				{
-	//					String location = splitReturnMessage[2];
-	//					location = location.substring(1, location.length() - 1);
-	//					String[] splitLocation = location.split(",");
-	//					
-	//					RobotState.GetInstance().setLocationX(Integer.parseInt(splitLocation[0]));
-	//					RobotState.GetInstance().setLocationY(Integer.parseInt(splitLocation[1]));
-	//				}
-	//			}
+				if (ComManager.completed.containsKey(locationUpdate))
+				{
+					String returnMessage = ComManager.completed.get(locationUpdate);
+					String[] splitReturnMessage = returnMessage.split(" ");
+					if (splitReturnMessage[1] == SUCCESS_RETURN)
+					{
+						String location = splitReturnMessage[2];
+						location = location.substring(1, location.length() - 1);
+						String[] splitLocation = location.split(",");
+						
+						RobotState.GetInstance().setLocationX(Integer.parseInt(splitLocation[0]));
+						RobotState.GetInstance().setLocationY(Integer.parseInt(splitLocation[1]));
+					}
+				}
 	//			else if (ComManager.completed.containsKey(directionUpdate))
 	//			{
 	//				String returnMessage = ComManager.completed.get(directionUpdate);
@@ -173,15 +179,15 @@ public class BaseGUI extends JFrame {
 	//					RobotState.GetInstance().setDirection(Double.parseDouble(splitReturnMessage[2]));
 	//				}
 	//			}
-	//			else if (ComManager.completed.containsKey(ultrasoundUpdate))
-	//			{
-	//				String returnMessage = ComManager.completed.get(ultrasoundUpdate);
-	//				String[] splitReturnMessage = returnMessage.split(" ");
-	//				if (splitReturnMessage[1] == SUCCESS_RETURN)
-	//				{
-	//					RobotState.GetInstance().setUltrasound(Integer.parseInt(splitReturnMessage[2]));
-	//				}
-	//			}
+				if (ComManager.completed.containsKey(ultrasoundUpdate))
+				{
+					String returnMessage = ComManager.completed.get(ultrasoundUpdate);
+					String[] splitReturnMessage = returnMessage.split(" ");
+					if (splitReturnMessage[1] == SUCCESS_RETURN)
+					{
+						RobotState.GetInstance().setUltrasound(Integer.parseInt(splitReturnMessage[2]));
+					}
+				}
 	//			else if (ComManager.completed.containsKey(touchUpdate))
 	//			{
 	//				String returnMessage = ComManager.completed.get(touchUpdate);

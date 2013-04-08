@@ -1,3 +1,5 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -18,8 +20,8 @@ public class CommunicationManager extends Thread {
 	public static String ERRORSYMBOL = "error";
 
 	NXTComm connection;
-	InputStream incoming;
-	OutputStream outgoing;
+	DataInputStream incoming;
+	DataOutputStream outgoing;
 	boolean running;
 	byte[] bytebuffer;
 	private Queue<String> tobesent = new LinkedList<String>();
@@ -29,10 +31,6 @@ public class CommunicationManager extends Thread {
 
 	public void sendCommand(String commandString) {
 		tobesent.add(commandString);
-	}
-
-	private void generateCommandID() {
-
 	}
 
 	public void run() {
@@ -48,43 +46,53 @@ public class CommunicationManager extends Thread {
 		}
 
 		while (running) {
+			/*
 			try {
-				this.sleep(1000);
+				this.sleep(100);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}
-			// listen
-			listen();
-			// send
-			try {
-				send();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			}*/
+			update();
 
 		}
 
 		destroy();
 	}
 
+	void update() {
+		// listen
+		listen();
+		// send
+		try {
+			send();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	private void listen() {
 		// TODO Auto-generated method stub
+		byte [] incomingbytes = null;
 		try {
-			incoming.read(bytebuffer);
-
+			
+if(incoming.available()>0)
+{
+				incomingbytes = new byte[incoming.available()];
+				incoming.readFully(incomingbytes);
+				System.out.println("Recieving: " + new String(incomingbytes));
 			// pop event for GUI
-
+}
 		} catch (Exception e) {
 			// do nothing
+			System.out.println(e.toString());
 		}
-		int count = 0;
-		for (int x = 0; x < bytebuffer.length; x++) {
-			count += bytebuffer[x];
-		}
-		if (count > 0) {
-			String[] output = new String(bytebuffer).split("\0");
+
+		if (incomingbytes != null)
+		{
+			
+			String[] output = new String(incomingbytes).split("\0");
 			for (String x : output) {
 				String[] split = x.split(" ");
 				int commandID = Integer.parseInt(split[1]);
@@ -101,7 +109,7 @@ public class CommunicationManager extends Thread {
 				}
 
 				// debug text
-				System.out.println(new String(bytebuffer));
+				System.out.println(x);
 			}
 		}
 	}
@@ -112,7 +120,9 @@ public class CommunicationManager extends Thread {
 			// send over
 			String sent = tobesent.poll();
 			System.out.println("Sending" +sent );
-			outgoing.write(sent.getBytes());
+			byte [] bytes = sent.getBytes();
+			outgoing.write(bytes);
+			outgoing.flush();
 		}
 	}
 
@@ -131,14 +141,15 @@ public class CommunicationManager extends Thread {
 		}
 	}
 
-	private void initialize() throws NXTCommException, IOException {
+	public void initialize() throws NXTCommException, IOException {
 		connection = NXTCommFactory.createNXTComm(NXTCommFactory.BLUETOOTH);
 		NXTInfo[] nxtInfo = connection.search(null, NXTCommFactory.BLUETOOTH);
 		connection.open(nxtInfo[0]);
 		// open up datainput and output streams;
-		incoming = connection.getInputStream();
-		outgoing = connection.getOutputStream();
+		
 
+		outgoing = new DataOutputStream(connection.getOutputStream());
+		incoming = new DataInputStream(connection.getInputStream());
 		bytebuffer = new byte[256];
 
 		running = true;
