@@ -9,9 +9,25 @@ private int speed;
 private int locationX;
 private int locationY;
 private double direction;
+private static RobotState instance = null;
 
-public RobotState(){
+private RobotState(){
+	ultrasound = 0;
+	touch = false;
+	speed = 1;
+	locationX = 0;
+	locationY = 0;
+	direction = 150;
+}
+
+public static RobotState GetInstance()
+{
+	if (instance == null)
+	{
+		instance = new RobotState();
+	}
 	
+	return instance;
 }
 
 public int getUltrasound(){
