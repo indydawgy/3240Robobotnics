@@ -5,9 +5,10 @@
 public class RobotState {
 private int ultrasound;
 private boolean touch;
-private int speed;
+private double speed;
 private int locationX;
 private int locationY;
+private int sound;
 private double direction;
 private static RobotState instance = null;
 
@@ -36,7 +37,7 @@ public int getUltrasound(){
 public boolean getTouch(){
 	return touch;
 }
-public int getSpeed(){
+public double getSpeed(){
 	return speed;
 }
 public int getLocationX(){
@@ -54,8 +55,8 @@ public void setUltrasound(int value){
 public void setTouch(boolean value){
 	touch = value;
 }
-public void setSpeed(int value){
-	speed = value;
+public void setSpeed(double d){
+	speed = d;
 }
 public void setLocationX(int value){
 	locationX = value;
@@ -72,7 +73,7 @@ public String get(String key){
 	else if(key.equals("touch"))
 		return Boolean.toString(getTouch());
 	else if(key.equals("speed"))
-		return Integer.toString(getSpeed());
+		return Double.toString(getSpeed());
 	else if(key.equals("locationX"))
 		return Integer.toString(getLocationX());
 	else if(key.equals("locationY"))
@@ -118,5 +119,10 @@ public static void main(String[] args){
 	R1.set("direction", "40.5");
 	//System.out.println("The Robot is moving in the direction of angle " + R1.getDirection() + " degrees to the normal");
 	System.out.println("The robot is moving in the direction of angle " + R1.get("direction") + " degrees to the normal");
+}
+
+public void setSound(int parseInt) {
+	sound = parseInt;
+	
 }
 }

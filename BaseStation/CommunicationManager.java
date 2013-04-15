@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import lejos.pc.comm.NXTComm;
 import lejos.pc.comm.NXTCommException;
@@ -43,7 +46,9 @@ public class CommunicationManager extends Thread {
 
 			while (true) {
 				try {
-					listenedStrings.add(incoming.readUTF());
+					String newstring = incoming.readUTF();
+							if(newstring != null)
+					listenedStrings.add(newstring);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -105,13 +110,18 @@ public class CommunicationManager extends Thread {
 				String[] split = x.split(" ");
 				int commandID = Integer.parseInt(split[0]);
 				String restOfString = "";
-				for (int i = 2; i < split.length; i++) {
-					restOfString += split[i];
+				for (int i = 1; i < split.length; i++) {
+					restOfString += split[i] + " ";
 				}
-				if (split[1] == this.ACKSYMBOL) {
+				restOfString = restOfString.trim();
+				if (split[1].compareTo(this.ACKSYMBOL) == 0 && !completed.contains(commandID)) {
 					acknowledged.put(commandID, restOfString);
-				} else if (acknowledged.containsKey(commandID)) {
+				} else 
+					{
+					if (acknowledged.containsKey(commandID)) {
+				
 					acknowledged.remove(commandID);
+					}
 					completed.put(commandID, restOfString);
 
 				}
@@ -150,7 +160,7 @@ public class CommunicationManager extends Thread {
 	public void initialize() throws NXTCommException, IOException {
 		connection = NXTCommFactory.createNXTComm(NXTCommFactory.BLUETOOTH);
 		NXTInfo[] nxtInfo = connection.search(null, NXTCommFactory.BLUETOOTH);
-		connection.open(nxtInfo[0]);
+		connection.open(nxtInfo[1]);
 		// open up datainput and output streams;
 		//start up listener
 
@@ -161,5 +171,13 @@ public class CommunicationManager extends Thread {
 		bytebuffer = new byte[256];
 
 		running = true;
+	}
+
+	public synchronized Set<Entry<Integer, String>> getCompletedEntries() {
+		
+		Set<Entry<Integer, String>> robot = new HashSet<Entry<Integer, String>>(completed.entrySet());
+		completed.clear();
+		// TODO Auto-generated method stub
+		return robot;
 	}
 }
